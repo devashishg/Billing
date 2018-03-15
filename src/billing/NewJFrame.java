@@ -6,14 +6,24 @@
 package billing;
 
 import java.util.regex.Pattern;
+import java.util.Scanner;
 import javax.swing.JOptionPane;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.print.*;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.BufferedWriter;
+import java.io.Writer;
 //import java.awt.FontMetrics;
 import static java.awt.print.Printable.NO_SUCH_PAGE;
 import static java.awt.print.Printable.PAGE_EXISTS;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 
 
 /**
@@ -32,6 +42,57 @@ public class NewJFrame extends javax.swing.JFrame {
     public NewJFrame() {
         initComponents();
     }
+    
+    public String reader() throws IOException
+    {
+        String line="";
+        int number;
+        try{
+            FileReader inputFile = new FileReader("list.txt");    
+            try{
+                Scanner parser = new Scanner(inputFile);
+                while (parser.hasNextLine()){
+                    line = parser.nextLine();                    
+                }
+            }
+            finally
+            {
+                inputFile.close();
+            }
+        }
+        catch(FileNotFoundException exception)
+        {
+            System.out.println(" not found");
+        }
+        catch(IOException exception)
+        {
+            System.out.println("Unexpected I/O error occured.");
+        }
+        if(line==""){}
+        else{
+        number = Integer.parseInt(line);
+        number+=1;
+        line = Integer.toString(number);}
+        
+        return line;
+    } 
+    
+    public void writer(String data) throws IOException
+    {
+        try{    
+            Writer output = new BufferedWriter(new FileWriter("list.txt", true));
+            output.append(data+"\n");
+            output.close();
+            //FileWriter fw=new FileWriter("list.txt");    
+            //fw.write(data);    
+            //fw.close();    
+        }
+        catch(IOException e){
+            System.out.println(e);
+        }
+    } 
+    
+    /*  */   
     
     public PageFormat getPageFormat(PrinterJob pj)
     {
@@ -112,13 +173,19 @@ public class BillPrintable implements Printable {
             int headerRectHeight=10;
             int headerRectHeighta=8;
             
+            
             ///////////////// Product names Get ///////////
                 String pn1a=cName.getText();
                 String pn2a=Date.getDate().toString();
                 //System.out.print(pn2a);
                 String pn3a=email.getText();
                 String pn4a=cNumber.getText();
-                String pn5a =invoiceNo.getText();
+                String pn5a="";
+                if(reader()==""){
+                    pn5a =invoiceNo.getText();
+                }
+                else{
+                    pn5a =reader();}
                 String pn6a =Pay.getSelectedItem().toString();
                 String pn7a=bmName.getText();
                 String pn8a=IMEI.getText() ;
@@ -175,8 +242,7 @@ public class BillPrintable implements Printable {
           
 
     }
-    catch(Exception r){
-        r.printStackTrace();
+    catch(  IOException | NumberFormatException r){
     }
 
               result = PAGE_EXISTS;    
@@ -226,6 +292,7 @@ public class BillPrintable implements Printable {
         totalAmount = new javax.swing.JLabel();
         jLabel18 = new javax.swing.JLabel();
         jLabel1 = new javax.swing.JLabel();
+        jCheckBox1 = new javax.swing.JCheckBox();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Invoice/Receipt");
@@ -239,6 +306,7 @@ public class BillPrintable implements Printable {
 
         jLabel2.setText("Invoice # :-");
 
+        invoiceNo.setEditable(false);
         invoiceNo.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 invoiceNoActionPerformed(evt);
@@ -323,6 +391,13 @@ public class BillPrintable implements Printable {
 
         jLabel1.setText("------Customer details-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------");
 
+        jCheckBox1.setText("manual");
+        jCheckBox1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jCheckBox1ActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -338,7 +413,9 @@ public class BillPrintable implements Printable {
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 83, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(18, 18, 18)
-                        .addComponent(invoiceNo, javax.swing.GroupLayout.PREFERRED_SIZE, 125, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addComponent(invoiceNo, javax.swing.GroupLayout.PREFERRED_SIZE, 125, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jCheckBox1))
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(layout.createSequentialGroup()
@@ -412,7 +489,8 @@ public class BillPrintable implements Printable {
                     .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                         .addComponent(jLabel2)
                         .addComponent(invoiceNo, javax.swing.GroupLayout.PREFERRED_SIZE, 36, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addComponent(jLabel3)))
+                        .addComponent(jLabel3)
+                        .addComponent(jCheckBox1)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -439,7 +517,7 @@ public class BillPrintable implements Printable {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel8, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(Address, javax.swing.GroupLayout.PREFERRED_SIZE, 36, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 28, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 29, Short.MAX_VALUE)
                 .addComponent(jLabel9, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -481,7 +559,7 @@ public class BillPrintable implements Printable {
     
 
     
-  
+    public int flagcheckbox=0;
     
     private void invoiceNoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_invoiceNoActionPerformed
         // TODO add your handling code here:
@@ -510,12 +588,14 @@ public class BillPrintable implements Printable {
         pj.setPrintable(new BillPrintable(),getPageFormat(pj));
         try {
              pj.print();
+             writer(reader());
           
         }
          catch (PrinterException ex) {
              System.out.println(ex);
-             ex.printStackTrace();
              
+        } catch (IOException ex) {
+            Logger.getLogger(NewJFrame.class.getName()).log(Level.SEVERE, null, ex);
         }
         
     }//GEN-LAST:event_jButton1ActionPerformed
@@ -543,6 +623,16 @@ public class BillPrintable implements Printable {
         totalAmount.setText("₹"+Integer.toString(total));
         //totalAmount.setText((String)Pay.getSelectedItem());
     }//GEN-LAST:event_jButton2ActionPerformed
+
+    private void jCheckBox1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jCheckBox1ActionPerformed
+        // TODO add your handling code here:
+        if(flagcheckbox==0){
+        invoiceNo.setEditable(true);
+        flagcheckbox=1;}
+        else{
+        invoiceNo.setEditable(false);
+        flagcheckbox=0;}
+    }//GEN-LAST:event_jCheckBox1ActionPerformed
 
     /**
      * @param args the command line arguments
@@ -588,6 +678,7 @@ public class BillPrintable implements Printable {
     private javax.swing.JTextField invoiceNo;
     private javax.swing.JButton jButton1;
     private javax.swing.JButton jButton2;
+    private javax.swing.JCheckBox jCheckBox1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel11;
